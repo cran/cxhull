@@ -1,11 +1,11 @@
-cca27a04f8ce44e1737300d29d2fe8f2 *DESCRIPTION
+4c1c7a289fef62159da78c5d33d2910a *DESCRIPTION
 d560167f2716f6622cd7cc2173b08559 *NAMESPACE
-eb13efc28e4bfd192113662ec1b3453a *NEWS.md
+8db870e2ae2906233996960b7bcc741b *NEWS.md
 ba774440ca748c8ef72fd01ad5fe5bca *R/cxhull.R
 bd1e77c2a4c1f25ab58a5ffac4457644 *build/vignette.rds
 cac03b25b06297c7f6f335621d7bac5b *inst/doc/truncated_tesseract.R
 e504e9bc2c7f0b4e51079849c2f8cf9d *inst/doc/truncated_tesseract.Rmd
-1048a76e3022c0a33ad8cbd18f192181 *inst/doc/truncated_tesseract.html
+0741b5ab3b223ca46102cefa25a1d681 *inst/doc/truncated_tesseract.html
 fc79765bfddb53b59bfa144490847bd2 *inst/ztemp/bipara.R
 b3a13a49d514b0a97d9d7edcbdc37f9f *inst/ztemp/cubicalPyramid.R
 21b5c3cae05b1205a954f504f04c43a3 *inst/ztemp/duoprism33.R
@@ -16,7 +16,7 @@ b483dcee6129496937f0b6264c9cc92c *inst/ztemp/smbr.R
 27dad5c88a91e5245126f67c4a1604e4 *inst/ztemp/squareAntiprism.R
 adf6f8e9da3010852cc4cb12e32b6be2 *inst/ztemp/teddy3.R
 cb36a4411d8f3bd5aacbfc5e9db5718e *man/cxhull.Rd
-54a613bbdb021871d2878d3dadaf5077 *src/convexhull.c
+65b087e721eb16a78100296c40dcc6dd *src/convexhull.c
 09fa598380f2232dbebe297320648b1b *src/convexhull.h
 dacb518e4412655c3c27df15e33ae5ba *src/geom2_r.c
 76fcfbadd94c49fb50b0ef9b6d9e2ee8 *src/geom_r.c
