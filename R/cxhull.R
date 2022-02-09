@@ -39,10 +39,10 @@ cxhull <- function(points, triangulate=FALSE){
     cat(readLines(errfile), sep="\n")
     stop(e)
   })
-  hull$volume <- 1/dimension * 
-    sum(sapply(hull$facets,
+  hull[["volume"]] <- 1/dimension * 
+    sum(sapply(hull[["facets"]],
                function(f) crossprod(f[["center"]], f[["normal"]])) *
-          sapply(hull$facets, "[[", "volume"))
+          sapply(hull[["facets"]], "[[", "volume"))
   if(dimension == 3L){
     attr(hull, "3d") <- TRUE
   }
@@ -88,7 +88,7 @@ TrianglesXYZ <- function(hull){
   Vertices <- VerticesXYZ(hull)
   if(!isTRUE(attr(hull, "triangulate"))){
     stop(
-      "You didn't compute the convex hull with the option `triangulate=TRUE`"
+      "You didn't compute the convex hull with the option `triangulate=TRUE`."
     )
   }
   Facets <- hull[["facets"]]
@@ -99,6 +99,8 @@ TrianglesXYZ <- function(hull){
     rep(1L:ntriangles, each = 3L)
   )
   colnames(triangles) <- c("x", "y", "z")
+  #triangles <- cbind(as.data.frame(triangles), family = NA_integer_)
+  families <- rep(NA_integer_, ntriangles)
   for(i in 1L:ntriangles){
     facet <- Facets[[i]]
     vertices <- as.character(facet[["vertices"]])
@@ -106,7 +108,12 @@ TrianglesXYZ <- function(hull){
       vertices <- vertices[c(1L, 3L, 2L)]
     }
     triangles[(3L*i-2L):(3L*i), ] <- Vertices[vertices, ]
+    family <- facet[["family"]]
+    if(!is.na(family)){
+      families[i] <- family
+    }
   }
+  attr(triangles, "families") <- families
   triangles
 }
 
@@ -144,7 +151,7 @@ EdgesAB <- function(hull){
   }
   if(!isTRUE(attr(hull, "triangulate"))){
     stop(
-      "You didn't compute the convex hull with the option `triangulate=TRUE`"
+      "You didn't compute the convex hull with the option `triangulate=TRUE`."
     )
   }
   ridges <- hull[["ridges"]]
@@ -166,6 +173,15 @@ EdgesAB <- function(hull){
   edges
 }
 
+#' @importFrom Rvcg vcgIsotropicRemeshing
+#' @noRd
+refineMesh <- function(mesh){
+  vcgIsotropicRemeshing(
+    vcgIsotropicRemeshing(mesh, TargetLen = 0), 
+    TargetLen = 0
+  )
+}
+
 #' @title Plot triangulated 3D convex hull
 #' @description Plot a triangulated 3D convex hull with \strong{rgl}.
 #'
@@ -173,7 +189,22 @@ EdgesAB <- function(hull){
 #'   with the option \code{triangulate=TRUE}
 #' @param edgesAsTubes Boolean, whether to draw the edges as tubes
 #' @param verticesAsSpheres Boolean, whether to draw the vertices as spheres
-#' @param facesColor the color for the faces
+#' @param palette a vector of colors to make a color gradient for the faces; 
+#'   if \code{NULL}, the colors of the faces are controlled by the 
+#'   \code{facesColor} argument
+#' @param bias,interpolate if \code{palette} is not \code{NULL}, these arguments are 
+#'   passed to \code{\link[grDevices]{colorRamp}}
+#' @param g a function defined on [0, 1] and taking its values in [0, 1]; it is 
+#'   composed with the function created by \code{\link[grDevices]{colorRamp}}, 
+#'   based on \code{palette}
+#' @param facesColor the color(s) for the faces; this argument is ignored if 
+#'   the argument \code{palette} is not \code{NULL}; otherwise there are three 
+#'   possibilities for \code{facesColor}: 
+#'   a single color, a vector of colors with length the number of triangles, 
+#'   in which case one color is assigned per triangle, or a vector of colors 
+#'   with length the number of faces, after merging the triangles, in 
+#'   which case one color is assigned per face; use \code{\link{hullSummary}} 
+#'   to know the number of faces
 #' @param edgesColor the color for the edges 
 #' @param tubesRadius the radius of the tubes when \code{edgesAsTubes=TRUE}
 #' @param spheresRadius the radius of the spheres when 
@@ -184,22 +215,95 @@ EdgesAB <- function(hull){
 #' @return No value.
 #' @export
 #'
-#' @importFrom rgl triangles3d cylinder3d shade3d lines3d spheres3d
+#' @importFrom rgl triangles3d cylinder3d shade3d lines3d spheres3d as.mesh3d
+#' @importFrom Morpho mergeMeshes
+#' @importFrom grDevices colorRamp rgb
 #'
 #' @examples library(cxhull)
 #' library(rgl)
 #' dodecahedron <- t(dodecahedron3d()$vb[-4L, ])
 #' hull <- cxhull(dodecahedron, triangulate = TRUE)
+#' # single color ####
 #' open3d(windowRect = c(50, 50, 562, 562))
 #' plotConvexHull3d(hull)
+#' # gradient ####
+#' open3d(windowRect = c(50, 50, 562, 562))
+#' plotConvexHull3d(hull, palette = hcl.colors(256, "Rocket"), bias = 0.5)
 plotConvexHull3d <- function(
   hull, edgesAsTubes = TRUE, verticesAsSpheres = TRUE, 
+  palette = NULL, bias = 1, interpolate = "linear", g = identity, 
   facesColor = "navy", edgesColor = "gold", 
   tubesRadius = 0.03, spheresRadius = 0.05, spheresColor = edgesColor
 ){
   edges <- EdgesAB(hull)
   trueEdges <- edges[edges[, 3L] == "yes", c(1L, 2L)]
-  triangles3d(TrianglesXYZ(hull), color = facesColor)
+  if(is.null(palette)){
+    ncolors <- length(facesColor) 
+    if(ncolors == 1L){
+      triangles3d(TrianglesXYZ(hull), color = facesColor)
+    }else{
+      nTriangles <- length(hull[["facets"]])
+      trianglesxyz <- TrianglesXYZ(hull)
+      triangles <- split(trianglesxyz, gl(nTriangles, 3L))
+      if(ncolors == nTriangles){
+        for(i in 1L:nTriangles){
+          triangles3d(
+            matrix(triangles[[i]], nrow = 3L, ncol = 3L), color = facesColor[i]
+          )
+        }
+      }else{
+        families <- as.character(attr(trianglesxyz, "families"))
+        families[is.na(families)] <- 
+          paste0("NA", seq_along(which(is.na(families))))
+        ufamilies <- unique(families)
+        if(ncolors == length(ufamilies)){
+          names(facesColor) <- ufamilies
+          for(i in 1L:nTriangles){
+            family <- families[i]
+            triangles3d(
+              matrix(triangles[[i]], nrow = 3L, ncol = 3L), 
+              color = facesColor[family]
+            )
+          }
+        }else{
+          warning("Invalid number of colors.")
+        }
+      }
+    }
+  }else{
+    nTriangles <- length(hull[["facets"]])
+    trianglesxyz <- TrianglesXYZ(hull)
+    triangles <- split(trianglesxyz, gl(nTriangles, 3L))
+    families <- as.character(attr(trianglesxyz, "families"))
+    families[is.na(families)] <- 
+      paste0("NA", seq_along(which(is.na(families))))
+    ufamilies <- unique(families)
+    mergedFaces <- rep(list(list()), length(ufamilies))
+    names(mergedFaces) <- ufamilies
+    for(i in 1L:nTriangles){
+      family <- families[i]
+      mesh <- as.mesh3d(matrix(triangles[[i]], nrow = 3L, ncol = 3L))
+      mergedFaces[[family]] <- c(mergedFaces[[family]], list(mesh))
+    }
+    for(family in ufamilies){
+      tomerge <- mergedFaces[[family]]
+      if(length(tomerge) > 1L){
+        mesh <- refineMesh(mergeMeshes(tomerge))
+      }else{
+        mesh <- refineMesh(tomerge[[1L]])
+      }
+      vertices <- mesh[["vb"]][-4L, ]
+      center <- rowMeans(vertices)
+      vertices <- sweep(vertices, 1L, center, `-`)
+      dists <- sqrt(apply(vertices, 2L, crossprod))
+      dists <- (dists - min(dists)) / diff(range(dists))
+      fpalette <- colorRamp(palette, bias = bias, interpolate = interpolate)
+      RGB <- fpalette(g(dists))
+      colors <- rgb(RGB[, 1L], RGB[, 2L], RGB[, 3L], maxColorValue = 255)
+      mesh[["material"]][["color"]] <- colors
+      shade3d(mesh)
+    }
+  }
   Vertices <- VerticesXYZ(hull)
   for(i in 1L:nrow(trueEdges)){
     edge <- trueEdges[i, ]
@@ -246,4 +350,108 @@ EdgesXYZ <- function(hull){
     Edges[(2L*i-1L):(2L*i), ] <- cbind(Vertices[edge, ], border)
   }  
   Edges
+}
+
+
+singleRows <- function(M){
+  rownames(M) <- paste0(M[, 1L], "-", M[, 2L])
+  tab12 <- table(rownames(M))
+  tab12 <- tab12[-which(tab12 == 2L)]
+  M[names(tab12), ]
+}
+
+polygonize <- function(edges){
+  nedges <- nrow(edges)
+  vs <- edges[1L, ]
+  v <- vs[2L]
+  edges <- edges[-1L, ]
+  for(. in 1L:(nedges-2L)){
+    j <- which(apply(edges, 1L, function(e) v %in% e))
+    v <- edges[j, ][which(edges[j, ] != v)]
+    vs <- c(vs, v)
+    edges <- edges[-j, ]
+  }
+  cbind(as.character(c(vs)), as.character(c(vs[-1L], vs[1L])))
+}
+
+
+#' @title Summary of 3D convex hull
+#' @description Summary of a triangulated 3D convex hull
+#'
+#' @param hull an output of \code{\link{cxhull}} applied to 3D points and 
+#'   with the option \code{triangulate=TRUE}
+#'
+#' @return A list with the vertices and the facets.
+#' @export
+#'
+#' @examples library(cxhull)
+#' # pyramid
+#' pts <- rbind(
+#'   c(0, 0, 0), 
+#'   c(1, 0, 0), 
+#'   c(1, 1, 0), 
+#'   c(0.5, 0.5, 1), 
+#'   c(0.5, 0.5, 0.9),
+#'   c(0, 1, 0)
+#' )
+#' hull <- cxhull(pts, triangulate = TRUE)
+#' hullSummary(hull)
+hullSummary <- function(hull){
+  if(!isTRUE(attr(hull, "3d"))){
+    stop("This function is restriced to the 3D case.")
+  }
+  if(!isTRUE(attr(hull, "triangulate"))){
+    stop(
+      "You didn't compute the convex hull with the option `triangulate=TRUE`."
+    )
+  }
+  hullFacets <- hull[["facets"]]
+  families <- vapply(hullFacets, `[[`, integer(1L), "family")
+  for(i in seq_along(hullFacets)){
+    attr(hullFacets[[i]][["edges"]], "id") <- i
+  }
+  otherFacets <- Filter(function(x) !is.na(x[["family"]]), hullFacets)
+  Other <- tapply(lapply(lapply(
+    otherFacets, `[[`, "edges"
+  ),
+  identity
+  ), families[!is.na(families)], function(x){
+    ids <- vapply(x, attr, integer(1L), "id")
+    list(
+      family   = families[ids[1L]],
+      facetids = ids,
+      edges    = polygonize(singleRows(do.call(rbind, x)))
+    )
+  }, simplify = FALSE)
+  nOtherFacets <- length(Other)
+  
+  triFacets <- Filter(function(x) is.na(x[["family"]]), hullFacets)
+  nTriangles <- length(triFacets)
+  
+  Triangles <- tapply(lapply(
+    triFacets, `[[`, "edges"
+  ), seq_along(triFacets), function(x){
+    id <- attr(x[[1L]], "id")
+    list(
+      facetid = id,
+      edges   = polygonize(x[[1L]])
+    )
+  }, simplify = FALSE)
+  
+  Vertices <- lapply(unname(hull[["vertices"]]), `[`, c("id", "point"))
+  vertices <- t(vapply(Vertices, `[[`, numeric(3L), "point"))
+  rownames(vertices) <- as.character(vapply(Vertices, `[[`, integer(1L), "id"))
+  
+  out <- list(
+    vertices    = vertices,
+    triangles   = unname(Triangles),
+    otherfacets = unname(Other)
+  )
+  attr(out, "facets") <- sprintf(
+    "%d triangular facet%s, %d other facet%s",
+    nTriangles, ifelse(nTriangles > 1L, "s", ""),
+    nOtherFacets, ifelse(nOtherFacets > 1L, "s", "")
+  )
+  
+  out
 }
