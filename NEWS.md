@@ -1,3 +1,9 @@
+# cxhull 0.5.0
+
+* New function `cxhullEdges`, which computes only the vertices and the edges 
+of a convex hull (for speed gain and less memory consumption).
+
+
 # cxhull 0.4.0
 
 * New function `hullSummary`, which returns a summary of a 3D triangulated 

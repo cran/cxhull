@@ -66,12 +66,17 @@ Plot a triangulated 3D convex hull with \strong{rgl}.
 \examples{
 library(cxhull)
 library(rgl)
-dodecahedron <- t(dodecahedron3d()$vb[-4L, ])
-hull <- cxhull(dodecahedron, triangulate = TRUE)
+cuboctahedron <- t(cuboctahedron3d()$vb[-4L, ])
+hull <- cxhull(cuboctahedron, triangulate = TRUE)
 # single color ####
 open3d(windowRect = c(50, 50, 562, 562))
 plotConvexHull3d(hull)
 # gradient ####
 open3d(windowRect = c(50, 50, 562, 562))
-plotConvexHull3d(hull, palette = hcl.colors(256, "Rocket"), bias = 0.5)
+if(getRversion() < "4.1.0"){
+  palette <- "Viridis"
+}else{
+  palette <- "Rocket"
+}
+plotConvexHull3d(hull, palette = hcl.colors(256, palette), bias = 0.5)
 }

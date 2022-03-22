@@ -1,7 +1,5 @@
 /* author: Stéphane Laurent */
-#include <R.h>
-#include <Rdefines.h>
-#include <Rinternals.h>
+#include "Rheaders.h"
 #define qh_QHimport
 #include "convexhull.h"
 #include "qhull_ra.h"
@@ -15,27 +13,7 @@ int cmpvertices(const void* a, const void* b) {
 int cmpfullvertices(const void* a, const void* b) {
   return ((*((FullVertexT*)a)).id - (*((FullVertexT*)b)).id);
 }
-// - sort edges ----------------------------------------------------------------
-int cmpedges(const void* a, const void* b) {
-  if((*(unsigned**)a)[0] > (*(unsigned**)b)[0]) {
-    return 1;
-  } else if((*(unsigned**)a)[0] == (*(unsigned**)b)[0]) {
-    return (*(unsigned**)a)[1] - (*(unsigned**)b)[1];
-  } else {
-    return -1;
-  }
-}
 
-// test equality of two _sorted_ arrays ----------------------------------------
-unsigned equalarraysu(unsigned* array1, unsigned* array2, unsigned length) {
-  unsigned i;
-  for(i = 0; i < length; i++) {
-    if(array1[i] != array2[i]) {
-      break;
-    }
-  }
-  return i == length;
-}
 
 // return ids of a vector of VertexT -------------------------------------------
 unsigned* map_vertexid(VertexT* vertices, unsigned nvertices) {

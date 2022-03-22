@@ -1,8 +1,8 @@
 Package: cxhull
 Type: Package
 Title: Convex Hull
-Version: 0.4.0
-Date: 2022-02-08
+Version: 0.5.0
+Date: 2022-03-21
 Authors@R: c(
   person("C. B.", "Barber", role="cph", comment="author of the Qhull library"),
   person("The Geometry Center", role="cph"), 
@@ -12,13 +12,16 @@ Description: Computes the convex hull in arbitrary dimension, based on the Qhull
 License: GPL-3
 Encoding: UTF-8
 Imports: rgl, Rvcg, Morpho, grDevices
+Suggests: colorspace
 URL: https://github.com/stla/cxhull
 BugReports: https://github.com/stla/cxhull/issues
 RoxygenNote: 7.1.2
+Depends: R (>= 2.10)
+LazyData: true
 NeedsCompilation: yes
-Packaged: 2022-02-09 15:11:49 UTC; SDL96354
+Packaged: 2022-03-22 02:05:18 UTC; SDL96354
 Author: C. B. Barber [cph] (author of the Qhull library),
   The Geometry Center [cph],
   Stéphane Laurent [cph, aut, cre]
 Repository: CRAN
-Date/Publication: 2022-02-09 16:40:02 UTC
+Date/Publication: 2022-03-22 08:10:05 UTC

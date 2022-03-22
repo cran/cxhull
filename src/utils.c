@@ -45,6 +45,16 @@ int cmpfunc (const void * a, const void * b) {
 int cmpfuncdbl (const void * a, const void * b) {
    return ( *(double*)a - *(double*)b > 0 ? 1 : -1);
 }
+// - sort edges ----------------------------------------------------------------
+int cmpedges(const void* a, const void* b) {
+  if((*(unsigned**)a)[0] > (*(unsigned**)b)[0]) {
+    return 1;
+  } else if((*(unsigned**)a)[0] == (*(unsigned**)b)[0]) {
+    return (*(unsigned**)a)[1] - (*(unsigned**)b)[1];
+  } else {
+    return -1;
+  }
+}
 void qsortu(unsigned* vector, unsigned length){
   qsort(vector, length, sizeof(unsigned), cmpfunc);
 }
@@ -88,4 +98,14 @@ double squaredDistance(double* p1, double* p2, unsigned dim){
     out += square(p1[i] - p2[i]);
   }
   return out;
+}
+
+// test equality of two _sorted_ arrays ----------------------------------------
+unsigned equalarraysu(unsigned* array1, unsigned* array2, unsigned length) {
+  for(unsigned i = 0; i < length; i++) {
+    if(array1[i] != array2[i]) {
+      return 0;
+    }
+  }
+  return 1;
 }

@@ -2,7 +2,8 @@
 #' @description Computes the convex hull of a set of points.
 #' @param points numeric matrix, one point per row
 #' @param triangulate logical, whether to triangulate the convex hull
-#' @return A list.
+#' @return A list providing a lot of information about the convex hull. See 
+#'   the \strong{README} file for details.
 #' @export
 #' @useDynLib cxhull, .registration = TRUE
 #' @examples
@@ -18,31 +19,36 @@
 #'  c(1,1,1)
 #' )
 #' cxhull(points)
-cxhull <- function(points, triangulate=FALSE){
+cxhull <- function(points, triangulate = FALSE){
+  stopifnot(isBoolean(triangulate))
   if(!is.matrix(points) || !is.numeric(points)){
-    stop("`points` must be a numeric matrix")
+    stop("The `points` argument must be a numeric matrix.")
   }
   dimension <- ncol(points)
   if(dimension < 2L){
-    stop("dimension must be at least 2")
+    stop("The dimension must be at least 2.")
   }
   if(nrow(points) <= dimension){
-    stop("insufficient number of points")
+    stop("Insufficient number of points.")
   }
   if(any(is.na(points))){
-    stop("missing values are not allowed")
+    stop("Missing values are not allowed.")
   }
-  errfile <- tempfile(fileext=".txt")
+  if(anyDuplicated(points)){
+    stop("There are some duplicated points.")
+  }
+  storage.mode(points) <- "double"
+  errfile <- tempfile(fileext = ".txt")
   hull <- tryCatch({
     .Call("cxhull_", points, as.integer(triangulate), errfile)
   }, error = function(e){
-    cat(readLines(errfile), sep="\n")
+    cat(readLines(errfile), sep = "\n")
     stop(e)
   })
   hull[["volume"]] <- 1/dimension * 
     sum(sapply(hull[["facets"]],
                function(f) crossprod(f[["center"]], f[["normal"]])) *
-          sapply(hull[["facets"]], "[[", "volume"))
+          sapply(hull[["facets"]], `[[`, "volume"))
   if(dimension == 3L){
     attr(hull, "3d") <- TRUE
   }
@@ -51,6 +57,128 @@ cxhull <- function(points, triangulate=FALSE){
   }
   hull
 }
+
+#' @title Vertices and edges of convex hull
+#' @description Computes the vertices and the edges of the convex hull of a set 
+#'   of points.
+#' @param points numeric matrix, one point per row; it must contain at least 
+#'   three columns (the two-dimensional case is not implemented yet)
+#' @param adjacencies Boolean, whether to return the vertex adjacencies
+#' @param orderEdges Boolean, whether to order the edges in the output
+#' @return A list with two fields: \code{vertices} and \code{edges}. The 
+#'   \code{vertices} field is a list which provides an id for each vertex and 
+#'   its coordinates. If \code{adjacencies=TRUE}, it provides in addition the 
+#'   ids of the adjacent vertices for each vertex. The \code{edges} fields is 
+#'   an integer matrix with two columns. Each row provides the two ids of the 
+#'   vertices of the corresponding edge.
+#' @export
+#' @useDynLib cxhull, .registration = TRUE
+#' @examples library(cxhull)
+#' # let's try with the hexacosichoron (see `?hexacosichoron`)
+#' #   it is convex so its convex hull is itself
+#' VE <- cxhullEdges(hexacosichoron)
+#' edges <- VE[["edges"]]
+#' random_edge <- edges[sample.int(720L, 1L), ]
+#' A <- hexacosichoron[random_edge[1L], ]
+#' B <- hexacosichoron[random_edge[2L], ]
+#' sqrt(c(crossprod(A - B))) # this is 2/phi
+#' # Now let's project the polytope to the H4 Coxeter plane 
+#' phi <- (1 + sqrt(5)) / 2
+#' u1 <- c(
+#'   0, 
+#'   2*phi*sin(pi/30), 
+#'   0, 
+#'   1
+#' )
+#' u2 <- c(
+#'   2*phi*sin(pi/15), 
+#'   0, 
+#'   2*sin(2*pi/15), 
+#'   0
+#' )
+#' u1 <- u1 / sqrt(c(crossprod(u1)))
+#' u2 <- u2 / sqrt(c(crossprod(u2)))
+#' # projections to the Coxeter plane
+#' proj <- function(v){
+#'   c(c(crossprod(v, u1)), c(crossprod(v, u2)))
+#' }
+#' points <- t(apply(hexacosichoron, 1L, proj))
+#' # we will assign a color to each edge  
+#' #   according to the norms of its two vertices
+#' norms2 <- round(apply(points, 1L, crossprod), 1L)
+#' ( tbl <- table(norms2) )
+#' #> 0.4 1.6 2.4 3.6 
+#' #>  30  30  30  30 
+#' values <- as.numeric(names(tbl))
+#' grd <- as.matrix(expand.grid(values, values)) 
+#' grd <- grd[grd[, 1L] <= grd[, 2L], ]
+#' pairs <- apply(grd, 1L, paste0, collapse = "-")
+#' colors <- hcl.colors(nrow(grd), palette = "Hawaii", rev = TRUE)
+#' colors <- colorspace::darken(colors, amount = 0.3)
+#' names(colors) <- pairs
+#' # plot ####
+#' opar <- par(mar = c(0, 0, 0, 0))
+#' plot(
+#'   points[!duplicated(points), ], pch = 19, cex = 0.3, asp = 1, 
+#'   axes = FALSE, xlab = NA, ylab = NA
+#' )
+#' for(i in 1L:nrow(edges)){
+#'   twopoints <- points[edges[i, ], ]
+#'   nrms2 <- round(sort(apply(twopoints, 1L, crossprod)), 1L)
+#'   pair <- paste0(nrms2, collapse = "-")
+#'   lines(twopoints, lwd = 0.5, col = colors[pair])
+#' }
+#' par(opar)
+cxhullEdges <- function(points, adjacencies = FALSE, orderEdges = FALSE){
+  stopifnot(isBoolean(adjacencies), isBoolean(orderEdges))
+  if(!is.matrix(points) || !is.numeric(points)){
+    stop("The `points` argument must be a numeric matrix.")
+  }
+  dimension <- ncol(points)
+  if(dimension < 2L){
+    stop("The dimension must be at least 2.")
+  }
+  if(dimension == 2L){
+    stop("This function is not implemented yet for the two-dimensional case.")
+  }
+  if(nrow(points) <= dimension){
+    stop("Insufficient number of points.")
+  }
+  if(any(is.na(points))){
+    stop("Missing values are not allowed.")
+  }
+  if(anyDuplicated(points)){
+    stop("There are some duplicated points.")
+  }
+  storage.mode(points) <- "double"
+  errfile <- tempfile(fileext = ".txt")
+  hullEdges <- tryCatch({
+    .Call(
+      "cxhullEdges_", points, 
+      as.integer(orderEdges), 
+      errfile, PACKAGE = "cxhull"
+    )
+  }, error = function(e){
+    cat(readLines(errfile), sep = "\n")
+    stop(e)
+  })
+  if(adjacencies){
+    edges <- hullEdges[["edges"]]
+    vertices <- hullEdges[["vertices"]]
+    for(i in 1L:length(vertices)){
+      id <- vertices[[i]][["id"]]
+      vertices[[i]][["neighbors"]] <- 
+        sort(c(edges[edges[, 1L] == id, 2L], edges[edges[, 2L] == id, 1L]))
+    }
+    hullEdges[["vertices"]] <- vertices
+  }
+  if(dimension == 3L){
+    attr(hullEdges, "3d") <- TRUE
+  }
+  hullEdges
+}
+
+
 
 #' @title Convex hull vertices
 #' @description The coordinates of the vertices of a 3D convex hull.
@@ -221,14 +349,19 @@ refineMesh <- function(mesh){
 #'
 #' @examples library(cxhull)
 #' library(rgl)
-#' dodecahedron <- t(dodecahedron3d()$vb[-4L, ])
-#' hull <- cxhull(dodecahedron, triangulate = TRUE)
+#' cuboctahedron <- t(cuboctahedron3d()$vb[-4L, ])
+#' hull <- cxhull(cuboctahedron, triangulate = TRUE)
 #' # single color ####
 #' open3d(windowRect = c(50, 50, 562, 562))
 #' plotConvexHull3d(hull)
 #' # gradient ####
 #' open3d(windowRect = c(50, 50, 562, 562))
-#' plotConvexHull3d(hull, palette = hcl.colors(256, "Rocket"), bias = 0.5)
+#' if(getRversion() < "4.1.0"){
+#'   palette <- "Viridis"
+#' }else{
+#'   palette <- "Rocket"
+#' }
+#' plotConvexHull3d(hull, palette = hcl.colors(256, palette), bias = 0.5)
 plotConvexHull3d <- function(
   hull, edgesAsTubes = TRUE, verticesAsSpheres = TRUE, 
   palette = NULL, bias = 1, interpolate = "linear", g = identity, 
