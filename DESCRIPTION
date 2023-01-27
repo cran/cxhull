@@ -1,8 +1,8 @@
 Type: Package
 Package: cxhull
 Title: Convex Hull
-Version: 0.7.0
-Date: 2022-10-25
+Version: 0.7.1
+Date: 2023-01-27
 Authors@R: c(
     person("C. B.", "Barber", role = "cph",
            comment = "author of the Qhull library"),
@@ -24,9 +24,9 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.1
 NeedsCompilation: yes
-Packaged: 2022-10-25 12:42:59 UTC; stla
+Packaged: 2023-01-27 18:11:47 UTC; stla
 Author: C. B. Barber [cph] (author of the Qhull library),
   The Geometry Center [cph],
   Stéphane Laurent [cph, aut, cre]
 Repository: CRAN
-Date/Publication: 2022-10-25 13:05:06 UTC
+Date/Publication: 2023-01-27 19:00:02 UTC

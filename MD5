@@ -1,6 +1,6 @@
-53cacbd99d5b8e2d31925169e6fccdb4 *DESCRIPTION
+43edf038146b5c7435e85ae4fad84564 *DESCRIPTION
 ea43a9c994cdbaed4c8ab93669fa69bd *NAMESPACE
-bee76e1574343973fd533bcda7521a10 *NEWS.md
+d3d90c1abfe918fac6b4a2c9d9e0c95b *NEWS.md
 1e59ed474cb2b295d4ffb4fea9e7699f *R/aaa.R
 0ddde40d72b69ff63e20882ab38a3a30 *R/angles.R
 b46700516c0a582c6d0772311da81bb6 *R/cxhull.R
@@ -31,14 +31,14 @@ d14a7f6ac9fc15c762a880a5eb7e99fb *man/dihedralAngles.Rd
 91869098b7c5b11f0abc5292cbdd5422 *man/hullSummary.Rd
 8b296c595776b3c9df1c7860f56375b8 *man/plotConvexHull3d.Rd
 c4ef52b3322deef60110df0a8dba754d *src/Rheaders.h
-e29e1e021c03cc5fd51826d41e0f5c81 *src/convexhull.c
+2daccbe234ded57219f18e7b3f48bf20 *src/convexhull.c
 42a02604229fcb9653452f2d2d9ac280 *src/convexhull.h
 8bb66ebd2f33bcd53231e8828eea8e1f *src/cxhull_edges.c
 3be524aba5c66ccb86f57de8a642ebd6 *src/cxhull_edges.h
 cd23469c26770f3abc9a7dc9b87e3948 *src/geom2_r.c
 4a24a6a8d624f1ab2ba7e198abbc399f *src/geom_r.c
 ff21efc47d2fb0bafe139fe9efa5fe1a *src/geom_r.h
-e71f2404a17726ecda7cb294ab7ffc30 *src/global_r.c
+ac88448f7e4d796f9ac0d429dedac803 *src/global_r.c
 21eadcb3fe80f2ad9385076ede585f68 *src/init.c
 01800a9a6aae6912065dc34dc7be9ec1 *src/io_r.c
 d88f330ad0d9cc51a265b01a6e64a71b *src/io_r.h
