@@ -1,6 +1,6 @@
-43edf038146b5c7435e85ae4fad84564 *DESCRIPTION
+ae76af290cf85e4bda0bb69042fa8bfa *DESCRIPTION
 ea43a9c994cdbaed4c8ab93669fa69bd *NAMESPACE
-d3d90c1abfe918fac6b4a2c9d9e0c95b *NEWS.md
+707cb47e89205c90a626f078b2d18204 *NEWS.md
 1e59ed474cb2b295d4ffb4fea9e7699f *R/aaa.R
 0ddde40d72b69ff63e20882ab38a3a30 *R/angles.R
 b46700516c0a582c6d0772311da81bb6 *R/cxhull.R
@@ -38,7 +38,7 @@ c4ef52b3322deef60110df0a8dba754d *src/Rheaders.h
 cd23469c26770f3abc9a7dc9b87e3948 *src/geom2_r.c
 4a24a6a8d624f1ab2ba7e198abbc399f *src/geom_r.c
 ff21efc47d2fb0bafe139fe9efa5fe1a *src/geom_r.h
-ac88448f7e4d796f9ac0d429dedac803 *src/global_r.c
+cddae2ed1327fdfa16f0a4beff16e979 *src/global_r.c
 21eadcb3fe80f2ad9385076ede585f68 *src/init.c
 01800a9a6aae6912065dc34dc7be9ec1 *src/io_r.c
 d88f330ad0d9cc51a265b01a6e64a71b *src/io_r.h
