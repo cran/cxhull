@@ -1,13 +1,13 @@
-ae76af290cf85e4bda0bb69042fa8bfa *DESCRIPTION
+1df74979809bdc3e779bc015e7e0151b *DESCRIPTION
 ea43a9c994cdbaed4c8ab93669fa69bd *NAMESPACE
-707cb47e89205c90a626f078b2d18204 *NEWS.md
+2973874c2ef9743f67b69c807b7a9515 *NEWS.md
 1e59ed474cb2b295d4ffb4fea9e7699f *R/aaa.R
 0ddde40d72b69ff63e20882ab38a3a30 *R/angles.R
 b46700516c0a582c6d0772311da81bb6 *R/cxhull.R
 d8de6f92aecf799114d6fe6a4543cd28 *R/data.R
 fce4032d1c01589cb45a57e6143162d5 *R/hullMesh.R
 8c08abf9d9a4fdb51c7df72f917c9fc1 *R/is.R
-2416d9a7a039c2a31afec96104b9fb09 *R/plot.R
+c0438307b1c6cb9e16745475b2bd803e *R/plot.R
 8540bfdb8ed20c481ee777c92c4a465a *README.md
 a4b4a349115e303b7a5d69b7ce84ea58 *data/daVinciSphere.rda
 1dbc4e531e8ccf4e6a81eb5012e87cc5 *data/hexacosichoron.rda
@@ -29,7 +29,7 @@ d14a7f6ac9fc15c762a880a5eb7e99fb *man/dihedralAngles.Rd
 116c6203eedba85333b936a2dd288356 *man/hexacosichoron.Rd
 1de00a0fa13b4ce2ea0a0a7dbf51f510 *man/hullMesh.Rd
 91869098b7c5b11f0abc5292cbdd5422 *man/hullSummary.Rd
-8b296c595776b3c9df1c7860f56375b8 *man/plotConvexHull3d.Rd
+fd5d8362c2543ce0cb5b4d0a845648f3 *man/plotConvexHull3d.Rd
 c4ef52b3322deef60110df0a8dba754d *src/Rheaders.h
 2daccbe234ded57219f18e7b3f48bf20 *src/convexhull.c
 42a02604229fcb9653452f2d2d9ac280 *src/convexhull.h
